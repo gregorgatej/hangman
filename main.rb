@@ -49,4 +49,3 @@ while masked_word.chars.any? { |letter| letter == "_" } && nr_rounds_left > 0
     return
   end
 end
-
