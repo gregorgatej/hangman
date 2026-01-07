@@ -4,6 +4,7 @@ word_array = File.readlines(fname)
 filtered_words = word_array.map(&:chomp).filter { |word| word.length >= 5 && word.length <= 12 }
 secret_word = filtered_words.sample()
 masked_word = "_" * secret_word.length
+correctly_guessed_letters = []
 incorrectly_guessed_letters = []
 incorrectly_guessed_words = []
 nr_rounds_left = 8
@@ -11,14 +12,17 @@ nr_rounds_left = 8
 puts "A random secret word has been chosen:"
 puts "Psst! The secret word is \"#{secret_word}\""
 
-def single_letter_guess(secret_word, masked_word, guess, incorrectly_guessed_letters)
+def single_letter_guess(secret_word, masked_word, guess, correctly_guessed_letters, incorrectly_guessed_letters)
   masked_word = masked_word.dup
-  secret_word.chars.each_with_index do |letter, index| 
-    if letter == guess
-      masked_word[index] = guess
-    elsif !incorrectly_guessed_letters.include?(guess)
-      incorrectly_guessed_letters << guess
+  if secret_word.include?(guess)
+    secret_word.chars.each_with_index do |letter, index| 
+      if letter == guess
+        masked_word[index] = guess
+        correctly_guessed_letters << guess if !correctly_guessed_letters.include?(guess)
+      end
     end
+  else
+    incorrectly_guessed_letters << guess if !incorrectly_guessed_letters.include?(guess)
   end
   masked_word
 end
@@ -35,6 +39,7 @@ end
 
 while masked_word.chars.any? { |letter| letter == "_" } && nr_rounds_left > 0
   puts "Nr. of missed guesses available to you: #{nr_rounds_left}"
+  puts "Correctly guessed letters: #{correctly_guessed_letters.join (", ")}" unless correctly_guessed_letters.empty?
   puts "Incorrectly guessed letters: #{incorrectly_guessed_letters.join (", ")}" unless incorrectly_guessed_letters.empty?
   puts "Incorrectly guessed words: #{incorrectly_guessed_words.join (", ")}" unless incorrectly_guessed_words.empty?
   puts "What will be your guess?"
@@ -44,7 +49,7 @@ while masked_word.chars.any? { |letter| letter == "_" } && nr_rounds_left > 0
 
   case guess.length
   when 1
-    masked_word = single_letter_guess(secret_word, masked_word, guess, incorrectly_guessed_letters)
+    masked_word = single_letter_guess(secret_word, masked_word, guess, correctly_guessed_letters, incorrectly_guessed_letters)
   else
     masked_word = whole_word_guess(secret_word, masked_word, guess, incorrectly_guessed_words)
   end
@@ -54,7 +59,9 @@ while masked_word.chars.any? { |letter| letter == "_" } && nr_rounds_left > 0
   nr_rounds_left = old_masked_word == masked_word ? nr_rounds_left -= 1 : nr_rounds_left
 
   if masked_word == secret_word
+    puts "*****************************************"
     puts "Congratulations, you have won the game!"
+    puts "*****************************************"
     return
   end
 end
