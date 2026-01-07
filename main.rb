@@ -10,23 +10,30 @@ nr_rounds_left = 8
 puts "A random secret word has been chosen:"
 puts "Psst! The secret word is #{secret_word}"
 
-def update_masked_word(secret_word, masked_word, guess)
+def update_masked_word(secret_word, masked_word, guess, nr_rounds_left)
+  masked_word = masked_word.dup
   secret_word.chars.each_with_index do |letter, index| 
     masked_word[index] = guess if letter == guess
   end
+  masked_word
 end
 
 while masked_word.chars.any? { |letter| letter == "_" } && nr_rounds_left > 0
-  puts "Nr. of rounds available for you to make a guess: #{nr_rounds_left}"
+  puts "Nr. of missed guesses available to you: #{nr_rounds_left}"
   puts "What will be your guess?"
   guess = gets.chomp.downcase
 
-  if guess.length == 1
-    update_masked_word(secret_word, masked_word, guess)
+  old_masked_word = masked_word.dup
+
+  case guess.length
+  when 1
+    masked_word = update_masked_word(secret_word, masked_word, guess, nr_rounds_left)
+  else
+    # TODO
   end
 
   puts "The masked word, following your guess, looks like this:"
   puts masked_word.chars.join(" ")
-  nr_rounds_left -= 1
+  nr_rounds_left = old_masked_word == masked_word ? nr_rounds_left -= 1 : nr_rounds_left
 end
 
