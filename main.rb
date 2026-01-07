@@ -10,12 +10,16 @@ nr_rounds_left = 8
 puts "A random secret word has been chosen:"
 puts "Psst! The secret word is #{secret_word}"
 
-def update_masked_word(secret_word, masked_word, guess, nr_rounds_left)
+def update_masked_word(secret_word, masked_word, guess)
   masked_word = masked_word.dup
   secret_word.chars.each_with_index do |letter, index| 
     masked_word[index] = guess if letter == guess
   end
   masked_word
+end
+
+def evaluate_whole_word_guess
+  # TODO
 end
 
 while masked_word.chars.any? { |letter| letter == "_" } && nr_rounds_left > 0
@@ -27,9 +31,9 @@ while masked_word.chars.any? { |letter| letter == "_" } && nr_rounds_left > 0
 
   case guess.length
   when 1
-    masked_word = update_masked_word(secret_word, masked_word, guess, nr_rounds_left)
+    masked_word = update_masked_word(secret_word, masked_word, guess)
   else
-    # TODO
+    evaluate_whole_word_guess
   end
 
   puts "The masked word, following your guess, looks like this:"
