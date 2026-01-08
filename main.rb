@@ -6,11 +6,12 @@ SAVED_GAME_PATH = "./data/saved_game.json"
 word_array = File.readlines(WORD_FILE_PATH)
 filtered_words = word_array.map(&:chomp).filter { |word| word.length >= 5 && word.length <= 12 }
 secret_word = filtered_words.sample()
+nr_rounds_left = 8
+
 masked_word = "_" * secret_word.length
 correctly_guessed_letters = []
 incorrectly_guessed_letters = []
 incorrectly_guessed_words = []
-nr_rounds_left = 8
 
 def save_game(
   secret_word,
@@ -34,14 +35,14 @@ def save_game(
   puts "Successfully written #{data} to disk."
 end
 
-def load_game(saved_game_path)
+def load_saved_game(saved_game_path)
   JSON.load(File.read(saved_game_path))
 end
 
 puts "Welcome to the game of hangman!"
 puts "Do you want to load previously saved game? (y/n)" if File.exist? SAVED_GAME_PATH
 if gets.chomp.downcase == "y"
-  data = load_game(SAVED_GAME_PATH)
+  data = load_saved_game(SAVED_GAME_PATH)
   secret_word = data["secret_word"]
   masked_word = data["masked_word"]
   correctly_guessed_letters = data["correctly_guessed_letters"]
