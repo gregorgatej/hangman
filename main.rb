@@ -1,8 +1,9 @@
 require "json"
 
-fname = "./data/google-10000-english-no-swears.txt"
+WORD_FILE_PATH = "./data/google-10000-english-no-swears.txt"
+SAVED_GAME_PATH = "./data/saved_game.json"
 
-word_array = File.readlines(fname)
+word_array = File.readlines(WORD_FILE_PATH)
 filtered_words = word_array.map(&:chomp).filter { |word| word.length >= 5 && word.length <= 12 }
 secret_word = filtered_words.sample()
 masked_word = "_" * secret_word.length
@@ -19,8 +20,8 @@ def save_game(
   incorrectly_guessed_words,
   nr_rounds_left
   )
-  f = File.new "./data/saved_game.json", "w+"
-  json = JSON.dump ({
+  f = File.new SAVED_GAME_PATH, "w+"
+  data = JSON.dump ({
   :secret_word => secret_word,
   :masked_word => masked_word,
   :correctly_guessed_letters => correctly_guessed_letters,
@@ -28,12 +29,29 @@ def save_game(
   :incorrectly_guessed_words => incorrectly_guessed_words,
   :nr_rounds_left => nr_rounds_left
   })
-  f.write(json)
+  f.write(data)
   f.close
-  puts "Successfully written #{json} to disk."
+  puts "Successfully written #{data} to disk."
 end
 
-puts "A random secret word has been chosen:"
+def load_game(saved_game_path)
+  JSON.load(File.read(saved_game_path))
+end
+
+puts "Welcome to the game of hangman!"
+puts "Do you want to load previously saved game? (y/n)" if File.exist? SAVED_GAME_PATH
+if gets.chomp.downcase == "y"
+  data = load_game(SAVED_GAME_PATH)
+  secret_word = data["secret_word"]
+  masked_word = data["masked_word"]
+  correctly_guessed_letters = data["correctly_guessed_letters"]
+  incorrectly_guessed_letters = data["incorrectly_guessed_letters"]
+  incorrectly_guessed_words = data["incorrectly_guessed_words"]
+  nr_rounds_left = data["nr_rounds_left"]
+  puts "Successfully loaded #{data} from disk."
+  skip_save_prompt = true
+end
+puts "A random secret word has been chosen."
 puts "Psst! The secret word is \"#{secret_word}\""
 
 def single_letter_guess(secret_word, masked_word, guess, correctly_guessed_letters, incorrectly_guessed_letters)
@@ -62,17 +80,20 @@ def whole_word_guess(secret_word, masked_word, guess, incorrectly_guessed_words)
 end
 
 while masked_word.chars.any? { |letter| letter == "_" } && nr_rounds_left > 0
+unless skip_save_prompt
   puts "Do you want to save the game? (y/n)"
   if gets.chomp.downcase == "y"
-    save_game(
-      secret_word,
-      masked_word,
-      correctly_guessed_letters,
-      incorrectly_guessed_letters,
-      incorrectly_guessed_words,
-      nr_rounds_left
-    )
+  save_game(
+    secret_word,
+    masked_word,
+    correctly_guessed_letters,
+    incorrectly_guessed_letters,
+    incorrectly_guessed_words,
+    nr_rounds_left
+  )
   end
+end  
+  skip_save_prompt = false
   puts "Nr. of missed guesses available to you: #{nr_rounds_left}"
   puts "Correctly guessed letters: #{correctly_guessed_letters.join (", ")}" unless correctly_guessed_letters.empty?
   puts "Incorrectly guessed letters: #{incorrectly_guessed_letters.join (", ")}" unless incorrectly_guessed_letters.empty?
