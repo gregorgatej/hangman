@@ -1,3 +1,5 @@
+require "json"
+
 fname = "./data/google-10000-english-no-swears.txt"
 
 word_array = File.readlines(fname)
@@ -8,6 +10,28 @@ correctly_guessed_letters = []
 incorrectly_guessed_letters = []
 incorrectly_guessed_words = []
 nr_rounds_left = 8
+
+def save_game(
+  secret_word,
+  masked_word,
+  correctly_guessed_letters,
+  incorrectly_guessed_letters,
+  incorrectly_guessed_words,
+  nr_rounds_left
+  )
+  f = File.new "./data/saved_game.json", "w+"
+  json = JSON.dump ({
+  :secret_word => secret_word,
+  :masked_word => masked_word,
+  :correctly_guessed_letters => correctly_guessed_letters,
+  :incorrectly_guessed_letters => incorrectly_guessed_letters,
+  :incorrectly_guessed_words => incorrectly_guessed_words,
+  :nr_rounds_left => nr_rounds_left
+  })
+  f.write(json)
+  f.close
+  puts "Successfully written #{json} to disk."
+end
 
 puts "A random secret word has been chosen:"
 puts "Psst! The secret word is \"#{secret_word}\""
@@ -38,6 +62,17 @@ def whole_word_guess(secret_word, masked_word, guess, incorrectly_guessed_words)
 end
 
 while masked_word.chars.any? { |letter| letter == "_" } && nr_rounds_left > 0
+  puts "Do you want to save the game? (y/n)"
+  if gets.chomp.downcase == "y"
+    save_game(
+      secret_word,
+      masked_word,
+      correctly_guessed_letters,
+      incorrectly_guessed_letters,
+      incorrectly_guessed_words,
+      nr_rounds_left
+    )
+  end
   puts "Nr. of missed guesses available to you: #{nr_rounds_left}"
   puts "Correctly guessed letters: #{correctly_guessed_letters.join (", ")}" unless correctly_guessed_letters.empty?
   puts "Incorrectly guessed letters: #{incorrectly_guessed_letters.join (", ")}" unless incorrectly_guessed_letters.empty?
