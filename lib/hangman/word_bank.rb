@@ -7,8 +7,6 @@ class WordBank
     @secret_word = secret_word
   end
 
-  private
-
   def secret_word
     word_array = File.readlines(WORD_FILE_PATH)
     filtered_words = word_array.map(&:chomp).filter { |word| word.length >= 5 && word.length <= 12 }
