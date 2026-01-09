@@ -1,4 +1,4 @@
 require_relative "lib/hangman"
 
-game = Game.new
+game = Hangman::Game.new
 game.start
