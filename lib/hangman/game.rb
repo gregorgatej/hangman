@@ -2,7 +2,8 @@ module Hangman
   class Game
     SAVED_GAME_PATH = "./data/saved_game.json"
 
-    attr_accessor :nr_rounds_left, :secret_word, :masked_word, :correctly_guessed_letters, :incorrectly_guessed_letters, :incorrectly_guessed_words, :skip_save_prompt
+    attr_accessor :nr_rounds_left, :secret_word, :masked_word, :correctly_guessed_letters,
+                  :incorrectly_guessed_letters, :incorrectly_guessed_words, :skip_save_prompt
 
     def initialize
       @nr_rounds_left = 8
@@ -16,14 +17,14 @@ module Hangman
 
     def save_game
       f = File.new SAVED_GAME_PATH, "w+"
-      data = JSON.dump ({
-      :secret_word => secret_word,
-      :masked_word => masked_word,
-      :correctly_guessed_letters => correctly_guessed_letters,
-      :incorrectly_guessed_letters => incorrectly_guessed_letters,
-      :incorrectly_guessed_words => incorrectly_guessed_words,
-      :nr_rounds_left => nr_rounds_left
-      })
+      data = JSON.dump({
+                         secret_word: secret_word,
+                         masked_word: masked_word,
+                         correctly_guessed_letters: correctly_guessed_letters,
+                         incorrectly_guessed_letters: incorrectly_guessed_letters,
+                         incorrectly_guessed_words: incorrectly_guessed_words,
+                         nr_rounds_left: nr_rounds_left
+                       })
       f.write(data)
       f.close
       puts "Successfully written #{data} to disk."
@@ -43,14 +44,14 @@ module Hangman
 
     def single_letter_guess(guess)
       if secret_word.include?(guess)
-        secret_word.chars.each_with_index do |letter, index| 
+        secret_word.chars.each_with_index do |letter, index|
           if letter == guess
-            self.masked_word[index] = guess
-            self.correctly_guessed_letters << guess if !correctly_guessed_letters.include?(guess)
+            masked_word[index] = guess
+            correctly_guessed_letters << guess unless correctly_guessed_letters.include?(guess)
           end
         end
-      else
-        self.incorrectly_guessed_letters << guess if !incorrectly_guessed_letters.include?(guess)
+      elsif !incorrectly_guessed_letters.include?(guess)
+        incorrectly_guessed_letters << guess
       end
     end
 
@@ -58,16 +59,14 @@ module Hangman
       if secret_word == guess
         self.masked_word = secret_word.dup
       elsif !incorrectly_guessed_words.include?(guess)
-        self.incorrectly_guessed_words << guess
+        incorrectly_guessed_words << guess
       end
     end
 
     def start
       puts "Welcome to the game of hangman!"
       puts "Do you want to load previously saved game? (y/n)" if File.exist? SAVED_GAME_PATH
-      if gets.chomp.downcase == "y"
-        load_saved_game
-      end
+      load_saved_game if gets.chomp.downcase == "y"
       puts "A random secret word has been chosen."
       puts "Psst! The secret word is \"#{secret_word}\""
       make_guesses
@@ -75,17 +74,21 @@ module Hangman
 
     def make_guesses
       while masked_word.chars.any? { |letter| letter == "_" } && nr_rounds_left > 0
-      unless skip_save_prompt
-        puts "Do you want to save the game? (y/n)"
-        if gets.chomp.downcase == "y"
-          save_game
+        unless skip_save_prompt
+          puts "Do you want to save the game? (y/n)"
+          save_game if gets.chomp.downcase == "y"
         end
-      end  
         self.skip_save_prompt = false
         puts "Nr. of missed guesses available to you: #{nr_rounds_left}"
-        puts "Correctly guessed letters: #{correctly_guessed_letters.join (", ")}" unless correctly_guessed_letters.empty?
-        puts "Incorrectly guessed letters: #{incorrectly_guessed_letters.join (", ")}" unless incorrectly_guessed_letters.empty?
-        puts "Incorrectly guessed words: #{incorrectly_guessed_words.join (", ")}" unless incorrectly_guessed_words.empty?
+        unless correctly_guessed_letters.empty?
+          puts "Correctly guessed letters: #{correctly_guessed_letters.join(', ')}"
+        end
+        unless incorrectly_guessed_letters.empty?
+          puts "Incorrectly guessed letters: #{incorrectly_guessed_letters.join(', ')}"
+        end
+        unless incorrectly_guessed_words.empty?
+          puts "Incorrectly guessed words: #{incorrectly_guessed_words.join(', ')}"
+        end
         puts "What will be your guess?"
         guess = gets.chomp.downcase
 
@@ -97,12 +100,12 @@ module Hangman
         else
           whole_word_guess(guess)
         end
-      
+
         puts "The masked word, following your guess, looks like this:"
         puts masked_word.chars.join(" ")
 
         self.nr_rounds_left = old_masked_word == masked_word ? nr_rounds_left - 1 : nr_rounds_left
-      
+
         if masked_word == secret_word
           winner_message
           return
@@ -111,9 +114,9 @@ module Hangman
     end
 
     def winner_message
-        puts "*****************************************"
-        puts "Congratulations, you have won the game!"
-        puts "*****************************************"
+      puts "*****************************************"
+      puts "Congratulations, you have won the game!"
+      puts "*****************************************"
     end
   end
 end
