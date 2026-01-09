@@ -1,11 +1,7 @@
 require "json"
 
-WORD_FILE_PATH = "./data/google-10000-english-no-swears.txt"
 SAVED_GAME_PATH = "./data/saved_game.json"
 
-word_array = File.readlines(WORD_FILE_PATH)
-filtered_words = word_array.map(&:chomp).filter { |word| word.length >= 5 && word.length <= 12 }
-secret_word = filtered_words.sample()
 nr_rounds_left = 8
 
 masked_word = "_" * secret_word.length
